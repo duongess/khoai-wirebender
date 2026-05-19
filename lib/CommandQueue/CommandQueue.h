@@ -6,7 +6,7 @@
 class CommandQueue {
 private:
     // Kich thuoc hang doi (Tuy chinh theo dung luong RAM)
-    static const int QUEUE_SIZE = 20; 
+    static const int QUEUE_SIZE = 100; 
     Instruction queue[QUEUE_SIZE];
     int head;
     int tail;
