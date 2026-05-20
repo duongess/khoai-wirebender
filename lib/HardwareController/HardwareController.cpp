@@ -2,10 +2,6 @@
 #include "Config.h"
 
 HardwareController::HardwareController() {
-    pinFeed = PIN_SERVO_FEED;
-    pinBend = PIN_SERVO_BEND;
-    pinButton = PIN_BTN_START;
-    
     lastDebounceTime = 0;
     // Gia su nut bam noi voi GND nen dung INPUT_PULLUP (mac dinh la HIGH)
     buttonState = HIGH;
@@ -14,11 +10,11 @@ HardwareController::HardwareController() {
 
 void HardwareController::init() {
 #ifdef ARDUINO
-    servoFeed.attach(pinFeed);
-    servoBend.attach(pinBend);
+    servoFeed.attach(PIN_SERVO_FEED);
+    servoBend.attach(PIN_SERVO_BEND);
     
     // Kich hoat dien tro keo len cho nut bam
-    pinMode(pinButton, INPUT_PULLUP);
+    pinMode(PIN_BTN_START, INPUT_PULLUP);
     
     servoFeed.write(0);
     servoBend.write(0);
@@ -29,7 +25,7 @@ void HardwareController::init() {
 
 bool HardwareController::isStartStopPressed() {
 #ifdef ARDUINO
-    int reading = digitalRead(pinButton);
+    int reading = digitalRead(PIN_BTN_START);
 
     // Kiem tra neu trang thai vat ly vua thay doi
     if (reading != lastButtonState) {
@@ -37,7 +33,7 @@ bool HardwareController::isStartStopPressed() {
     }
 
     // Neu trang thai giu nguyen lau hon khoang thoi gian chong nhieu (50ms)
-    if ((millis() - lastDebounceTime) > 50) {
+    if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY_MS) {
         if (reading != buttonState) {
             buttonState = reading;
             
@@ -61,7 +57,7 @@ void HardwareController::executeFeed(float distance) {
     unsigned long runTimeMs = (unsigned long)((distance / SPEED_MM_PER_SEC) * 1000.0f);
 
     // 1. Phat lenh quay toi voi toc do toi da
-    servoFeed.write(180); 
+    servoFeed.write(MAX_SPEED); 
     
     // 2. Cho doi cho den khi dat du chieu dai (Bao gom sai so sụt ap)
     delay(runTimeMs);

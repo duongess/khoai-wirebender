@@ -33,6 +33,9 @@ const float PIXEL_TO_MM_RATIO = 0.2f;
 // Ty le chuyen doi tu MM sang thoi gian cua dong co Feed
 const float SPEED_MM_PER_SEC = 10.0f; 
 
+// Toc đo toi da di chuyen
+const float MAX_SPEED = 180.0f; // (90-180]
+
 // ==========================================
 // GIOI HAN CO KHI (MECHANICAL CONSTRAINTS)
 // ==========================================

@@ -1,26 +1,28 @@
 #include "Kinematics.h"
+#include "Config.h"
 
 Kinematics::Kinematics() {
-    // Thiet lap cac hang so vat ly (Can tinh chinh thuc te)
-    maxStrokeMM = 30.0f;    // Chieu dai toi da tay don servo day duoc
-    feedMultiplier = 1.8f;  // 1mm day tuong ung voi 1.8 do servo
-    bendSpringback = 5.0f;  // Kim loai nay lai 5 do sau khi uon
 }
 
-float Kinematics::calcFeed(float length) {
-    // Tra ve so do servo can quay de day chieu dai nay
-    return length * feedMultiplier;
-}
-
-float Kinematics::calcBend(float angle) {
-    if (angle == 0) return 0;
+float Kinematics::calcFeed(float rawPixelLength) {
+    // Buoc 1: Chuyen doi tu do dai Pixel tren ban ve sang Milimet thuc te
+    float realLengthMM = rawPixelLength * PIXEL_TO_MM_RATIO;
     
-    // Goc uon thuc te cua may = phan bu cua goc vector + he so dan hoi
-    float realAngle = 180.0f - angle + bendSpringback;
-    if (realAngle > 180.0f) realAngle = 180.0f;
-    return realAngle;
+    // Buoc 2: Nhan voi he so bu truot ma sat cua banh ty
+    return realLengthMM * FEED_SLIP_FACTOR;
+}
+
+float Kinematics::calcBend(float rawAngle) {
+    // Nhan voi he so dan hoi cua thep thay vi cong mot so co dinh
+    float compensatedAngle = rawAngle * SPRINGBACK_FACTOR;
+    
+    // Gioi han khong cho vuot qua goc co khi toi da cua may
+    if (compensatedAngle > BEND_MAX_ANGLE) {
+        return BEND_MAX_ANGLE;
+    }
+    return compensatedAngle;
 }
 
 float Kinematics::getMaxStroke() {
-    return maxStrokeMM;
+    return MAX_FEED_STROKE_MM;
 }

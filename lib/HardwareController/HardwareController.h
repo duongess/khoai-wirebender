@@ -8,10 +8,6 @@ class HardwareController {
 private:
     Servo servoFeed;
     Servo servoBend;
-    
-    int pinFeed;
-    int pinBend;
-    int pinButton;
 
     // Bien dung cho bo loc nhieu nut bam (Debounce)
     unsigned long lastDebounceTime;
