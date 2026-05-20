@@ -11,17 +11,20 @@ private:
     
     int pinFeed;
     int pinBend;
+    int pinButton;
+
+    // Bien dung cho bo loc nhieu nut bam (Debounce)
+    unsigned long lastDebounceTime;
+    int buttonState;
+    int lastButtonState;
 
 public:
     HardwareController();
     
-    // Khoi tao cong ket noi va dua may ve trang thai 0
     void init();
+    bool isStartStopPressed();
     
-    // Thuc thi 1 nhat day tuyen tinh
     void executeFeed(float distance);
-    
-    // Thuc thi 1 nhat uon goc
     void executeBend(float angle);
 };
 

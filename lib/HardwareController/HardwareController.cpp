@@ -1,15 +1,24 @@
 #include "HardwareController.h"
+#include "Config.h"
 
 HardwareController::HardwareController() {
-    // Chot cong tren Arduino Uno
-    pinFeed = A1;
-    pinBend = A0;
+    pinFeed = PIN_SERVO_FEED;
+    pinBend = PIN_SERVO_BEND;
+    pinButton = PIN_BTN_START;
+    
+    lastDebounceTime = 0;
+    // Gia su nut bam noi voi GND nen dung INPUT_PULLUP (mac dinh la HIGH)
+    buttonState = HIGH;
+    lastButtonState = HIGH;
 }
 
 void HardwareController::init() {
 #ifdef ARDUINO
     servoFeed.attach(pinFeed);
     servoBend.attach(pinBend);
+    
+    // Kich hoat dien tro keo len cho nut bam
+    pinMode(pinButton, INPUT_PULLUP);
     
     servoFeed.write(0);
     servoBend.write(0);
@@ -18,20 +27,55 @@ void HardwareController::init() {
 #endif
 }
 
+bool HardwareController::isStartStopPressed() {
+#ifdef ARDUINO
+    int reading = digitalRead(pinButton);
+
+    // Kiem tra neu trang thai vat ly vua thay doi
+    if (reading != lastButtonState) {
+        lastDebounceTime = millis();
+    }
+
+    // Neu trang thai giu nguyen lau hon khoang thoi gian chong nhieu (50ms)
+    if ((millis() - lastDebounceTime) > 50) {
+        if (reading != buttonState) {
+            buttonState = reading;
+            
+            // Phat hien su kien nhan xuong (HIGH xuong LOW)
+            if (buttonState == LOW) {
+                lastButtonState = reading;
+                return true; 
+            }
+        }
+    }
+    lastButtonState = reading;
+#endif
+    return false;
+}
+
 void HardwareController::executeFeed(float distance) {
 #ifdef ARDUINO
-    // Ep kieu tu float sang int cho Servo
-    int targetAngle = (int)distance;
-    if (targetAngle > 180) targetAngle = 180;
+    // Kiem tra loai tru cac gia tri am hoac 0
+    if (distance <= 0.0f) return;
+
+    unsigned long runTimeMs = (unsigned long)((distance / SPEED_MM_PER_SEC) * 1000.0f);
+
+    // 1. Phat lenh quay toi voi toc do toi da
+    servoFeed.write(180); 
     
-    servoFeed.write(targetAngle);
-    delay(400); // Thoi gian tay don day ra
+    // 2. Cho doi cho den khi dat du chieu dai (Bao gom sai so sụt ap)
+    delay(runTimeMs);
     
-    servoFeed.write(0); // Thu tay don ve de ngam 1 chieu giu lai
-    delay(400);
-    
-    Serial.print("F:");
-    Serial.println(targetAngle);
+    // 3. Phat lenh dung dong co (Can kiem tra lai xem con servo cua ban dung o 90 hay so khac)
+    servoFeed.write(90); 
+
+    // Doi them mot chut de triet tieu quan tinh truoc khi uon
+    delay(200);
+
+    Serial.print("F_MM:");
+    Serial.println(distance);
+    Serial.print("TIME_MS:");
+    Serial.println(runTimeMs);
 #endif
 }
 
@@ -42,9 +86,9 @@ void HardwareController::executeBend(float angle) {
     if (targetAngle <= 0) return;
     
     servoBend.write(targetAngle);
-    delay(600); // Thoi gian uon
+    delay(600); 
     
-    servoBend.write(0); // Thu chot uon ve vi tri nghi
+    servoBend.write(0); 
     delay(500);
     
     Serial.print("B:");

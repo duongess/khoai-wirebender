@@ -1,22 +1,50 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// Dinh nghia cac loai hanh dong cua may
 enum CommandType {
     CMD_FEED, 
     CMD_BEND  
 };
 
-// Cau truc cua 1 lenh dieu khien nam trong Queue
 struct Instruction {
     CommandType type;
-    float value; // Dung cho ca chieu dai day (mm) hoac goc uon (do)
+    float value; // Chieu dai (mm) hoac Goc uon (do)
 };
 
-// Cau truc vector co ban
 struct Vector {
-    float length; // Chieu dai vector (mm)
-    float angle;  // Goc cua vector (do)
+    float length; 
+    float angle;  
 };
+
+// ==========================================
+// CAU HINH CHAN PHAN CUNG (PINOUT)
+// ==========================================
+const int PIN_SERVO_FEED = A1;   // PWM dieu khien servo day day
+const int PIN_SERVO_BEND = A0;  // PWM dieu khien servo uon day
+const int PIN_BTN_START  = 2;   // Nut bam Start/Stop
+
+// ==========================================
+// CAU HINH QUY DOI HE QUY CHIEU (SCALE FACTORS)
+// ==========================================
+// Gia su ban ve 500x500 px. Muon kich thuoc phoi toi da la 100mm.
+// Ty le quy doi = 100 / 500 = 0.2
+const float PIXEL_TO_MM_RATIO = 0.2f; 
+
+// Ty le chuyen doi tu MM sang thoi gian cua dong co Feed
+const float SPEED_MM_PER_SEC = 10.0f; 
+
+// ==========================================
+// GIOI HAN CO KHI (MECHANICAL CONSTRAINTS)
+// ==========================================
+const float MAX_FEED_STROKE_MM = 30.0f; // Hanh trinh day toi da cua 1 nhat ep (mm)
+const int BEND_HOME_ANGLE = 0;          // Goc nghi mac dinh de thep di qua khong bi ket (do)
+const int BEND_MAX_ANGLE = 180;         // Gioi han chong va dap co khi cua servo uon (do)
+
+// ==========================================
+// BU TRU SAI SO (ERROR COMPENSATION)
+// ==========================================
+const float SPRINGBACK_FACTOR = 1.05f;  // He so dan hoi (Vi du: Uon 90 do he thong se tu nhan 90 * 1.05 = 94.5 do)
+const float FEED_SLIP_FACTOR  = 1.02f;  // Bu truot ma sat khi day thep (Day 10mm thanh 10.2mm)
+const unsigned long DEBOUNCE_DELAY_MS = 50; // Thoi gian tre chong nhieu nut bam (ms)
 
 #endif
