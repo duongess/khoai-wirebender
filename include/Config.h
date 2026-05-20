@@ -8,6 +8,8 @@
     #define A3 17
     #define A4 18
     #define A5 19
+#else
+    #include <Arduino.h>
 #endif
 
 enum CommandType {
