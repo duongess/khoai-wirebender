@@ -21,6 +21,8 @@ public:
     
     // Lay vector cu the tai 1 vi tri
     Vector getVector(int index);
+
+    void calculateVectors(float x[], float y[], int count);
 };
 
 #endif

@@ -86,17 +86,52 @@ class DrawingBoard:
             return
             
         try:
-            # Xuat file txt chua toa do
-            with open("data/coordinates.txt", "w") as f:
-                for pt in self.coordinates:
-                    f.write(f"{pt[0]} {pt[1]}\n")
-                    
-            # Xuat file png
+            # Luu anh preview
             self.image.save("data/image.png")
             
-            messagebox.showinfo("Thanh cong", "Da luu file txt va png vao thu muc data/")
+            # Tinh toan duong dan luu file PathData.h vao thu muc C++
+            # __file__ la vi tri cua planner.py (nam trong thu muc master)
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            
+            # Lui lai 1 cap de ve thu muc root BTL, sau do vao lib/PathPlanner
+            project_root = os.path.dirname(current_dir)
+            target_dir = os.path.join(project_root, "lib", "PathPlanner")
+            os.makedirs(target_dir, exist_ok=True)
+            
+            file_path = os.path.join(target_dir, "PathData.h")
+            
+            # Ghi file header C++
+            with open(file_path, "w") as f:
+                f.write("#ifndef PATHDATA_H\n#define PATHDATA_H\n\n")
+                
+                # Tu dong nhan dien moi truong de chon vi tri luu bo nho
+                f.write("#ifdef ARDUINO\n")
+                f.write("    #include <avr/pgmspace.h>\n")
+                f.write("    #define DAT_MEM PROGMEM\n")
+                f.write("#else\n")
+                f.write("    #define DAT_MEM\n")
+                f.write("#endif\n\n")
+                
+                # Loc bo cac diem ngat net (-1, -1)
+                valid_coords = [pt for pt in self.coordinates if pt[0] != -1]
+                
+                f.write(f"const int PATH_POINT_COUNT = {len(valid_coords)};\n\n")
+                
+                # Khai bao mang kem macro DAT_MEM
+                f.write("const float pathX[] DAT_MEM = {")
+                f.write(", ".join(str(pt[0]) for pt in valid_coords))
+                f.write("};\n\n")
+                
+                f.write("const float pathY[] DAT_MEM = {")
+                f.write(", ".join(str(pt[1]) for pt in valid_coords))
+                f.write("};\n\n")
+                
+                f.write("#endif\n")
+                
+            messagebox.showinfo("Thanh cong", f"Da sinh code C++ tai:\n{file_path}")
+            
         except Exception as e:
-            messagebox.showerror("Loi", f"Luu file that bai: {e}")
+            messagebox.showerror("Loi", f"Xuat file that bai: {e}")
 
 def main():
     root = tk.Tk()

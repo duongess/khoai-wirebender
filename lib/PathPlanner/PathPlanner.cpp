@@ -1,10 +1,25 @@
 #include "PathPlanner.h"
+#include "Utils.h"
 #include <math.h>
 
-// Chi dung thu vien C++ tieu chuan tren moi truong may tinh
+// Gia lap thu vien va ham doc Flash cho moi truong may tinh
 #ifndef ARDUINO
-#include <iostream>
-#include <fstream>
+    #define PROGMEM
+    inline float pgm_read_float(const float* addr) {
+        return *addr;
+    }
+#endif
+
+// Kiem tra file data
+#if __has_include("PathData.h")
+    #include "PathData.h"
+    const bool hasPathData = true;
+#else
+    const bool hasPathData = false;
+    // Khai bao gia de chong loi bien dich neu thieu file
+    const int PATH_POINT_COUNT = 0;
+    const float pathX[1] = {0.0f};
+    const float pathY[1] = {0.0f};
 #endif
 
 PathPlanner::PathPlanner() {
@@ -12,36 +27,43 @@ PathPlanner::PathPlanner() {
 }
 
 void PathPlanner::generatePath() {
-#ifndef ARDUINO
-    std::ifstream file("master/data/coordinates.txt");
-    
-    if (!file.is_open()) {
-        std::cout << "ERR_FILE_OPEN\n";
+    if (!hasPathData) {
+        printLog("ERR: Thieu PathData.h");
         return;
     }
 
-    float x[MAX_POINTS + 1];
-    float y[MAX_POINTS + 1];
-    int rawPoints = 0;
-    float currentX, currentY;
-
-    // Doc tat ca toa do tu file
-    while (file >> currentX >> currentY && rawPoints <= MAX_POINTS) {
-        x[rawPoints] = currentX;
-        y[rawPoints] = currentY;
-        rawPoints++;
+    float x[MAX_POINTS];
+    float y[MAX_POINTS];
+    
+    // Gioi han so diem doc de bao ve mang RAM
+    int pointsToRead = PATH_POINT_COUNT;
+    if (pointsToRead > MAX_POINTS) {
+        pointsToRead = MAX_POINTS;
+        printLog("WARN: Du lieu bi cat xen vi vuot MAX_POINTS");
     }
-    file.close();
 
-    // Noi suy tu toa do (X,Y) thanh Vector (Do dai, Goc)
-    for (int i = 0; i < rawPoints - 1; i++) {
+    // Vong lap dung chung cho ca PC va Arduino thong qua macro
+    for (int i = 0; i < pointsToRead; i++) {
+        x[i] = pgm_read_float(&pathX[i]);
+        y[i] = pgm_read_float(&pathY[i]);
+    }
+
+    calculateVectors(x, y, pointsToRead);
+    printLog("LOAD_OK: PathData");
+}
+
+void PathPlanner::calculateVectors(float x[], float y[], int count) {
+    if (count < 2) {
+        pointCount = 0;
+        return;
+    }
+
+    for (int i = 0; i < count - 1; i++) {
         float dx = x[i+1] - x[i];
         float dy = y[i+1] - y[i];
         
-        // Tinh do dai vector
         path[i].length = sqrt(dx*dx + dy*dy);
         
-        // Tinh goc uon so voi vector truoc do
         if (i > 0) {
             float prevDx = x[i] - x[i-1];
             float prevDy = y[i] - y[i-1];
@@ -51,20 +73,17 @@ void PathPlanner::generatePath() {
             float len2 = path[i].length;
             
             float cosTheta = dotProduct / (len1 * len2);
-            // Gioi han sai so toan hoc
+            
             if (cosTheta > 1.0f) cosTheta = 1.0f;
             if (cosTheta < -1.0f) cosTheta = -1.0f;
             
-            // Chuyen tu Radian sang Do
             path[i].angle = acos(cosTheta) * 180.0f / M_PI;
         } else {
             path[i].angle = 0.0f;
         }
     }
     
-    pointCount = rawPoints - 1;
-    std::cout << "LOAD_OK\n";
-#endif
+    pointCount = count - 1;
 }
 
 int PathPlanner::getPointCount() {
