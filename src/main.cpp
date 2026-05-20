@@ -29,34 +29,53 @@ void setup() {
     for (int i = 0; i < planner.getPointCount(); i++) {
         Vector currentVec = planner.getVector(i);
         
-        // Bo qua thuc thi servo neu net ve di thang (goc lech xap xi 0)
+        // Tham so chia nho goc
+        float filletFeed = 5.0f; // Nhich 5mm de lay khong gian be tiep
+        int extraFeeds = 0;      // Dem so lan da nhich
+        
         if (abs(currentVec.angle) > 0.1f) {
+            float remainingAngle = currentVec.angle;
             
-            // Tinh goc co bu tru dan hoi (VD: -45 do * 1.05 = -47.25 do)
-            float bendAngleWithError = engine.calcBend(currentVec.angle);
+            // Vong lap bam nho nhung goc gắt
+            while (abs(remainingAngle) > 90.0f/SPRINGBACK_FACTOR) {
+                float chunkAngle = (remainingAngle > 0) ? 90.0f/SPRINGBACK_FACTOR : -90.0f/SPRINGBACK_FACTOR;
+                
+                float servoTarget = 90.0f + engine.calcBend(chunkAngle);
+                if (servoTarget > 180.0f) servoTarget = 180.0f;
+                if (servoTarget < 0.0f) servoTarget = 0.0f;
+                
+                cmdQueue.push({CMD_BEND, servoTarget});
+                cmdQueue.push({CMD_FEED, filletFeed});
+                
+                remainingAngle -= chunkAngle;
+                extraFeeds++;
+            }
             
-            // MAP GOC SERVO:
-            // -90 do (be phai) -> 0 do Servo
-            // 0 do (di thang) -> 90 do Servo (Vi tri home moi)
-            // +90 do (be trai) -> 180 do Servo
-            float servoTarget = 90.0f + bendAngleWithError;
-            
-            // Gioi han chong va dap the chat cho servo
-            if (servoTarget > 180.0f) servoTarget = 180.0f;
-            if (servoTarget < 0.0f) servoTarget = 0.0f;
-            
-            cmdQueue.push({CMD_BEND, servoTarget});
+            // Be not phan goc le con lai (chac chan nam trong nguong an toan)
+            if (abs(remainingAngle) > 0.1f) {
+                float finalServoTarget = 90.0f + engine.calcBend(remainingAngle);
+                if (finalServoTarget > 180.0f) finalServoTarget = 180.0f;
+                if (finalServoTarget < 0.0f) finalServoTarget = 0.0f;
+                
+                cmdQueue.push({CMD_BEND, finalServoTarget});
+            }
         }
         
-        // Day phoi
-        float lengthWithError = engine.calcFeed(currentVec.length);
-        float maxS = engine.getMaxStroke();
+        // Tinh toan chieu dai di thang sau khi bẻ
+        // Tru di luong hao phi chieu dai da nhich de bẻ goc
+        float lengthWithError = engine.calcFeed(currentVec.length) - (extraFeeds * filletFeed);
         
-        int strokes = (int)(lengthWithError / maxS);
-        float remainder = lengthWithError - (strokes * maxS);
+        // Chan so am neu doan can day ngan hon ca phan da hao phi
+        if (lengthWithError < 0.0f) {
+            lengthWithError = 0.0f;
+        }
+                
+        int strokes = (int)(lengthWithError / MAX_FEED_STROKE_MM);
+        float remainder = lengthWithError - (strokes * MAX_FEED_STROKE_MM);
         
+        // Bam nho lenh day chieu dai chinh
         for(int s = 0; s < strokes; s++) {
-            cmdQueue.push({CMD_FEED, maxS});
+            cmdQueue.push({CMD_FEED, MAX_FEED_STROKE_MM});
         }
         
         if (remainder > 0.0f) {

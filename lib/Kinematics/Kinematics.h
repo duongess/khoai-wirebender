@@ -14,10 +14,7 @@ public:
     float calcFeed(float length);
     
     // Tinh toan goc uon thuc te sau khi bu tru
-    float calcBend(float angle);
-    
-    // Lay thong so hanh trinh toi da cua tay don
-    float getMaxStroke();
+    float calcBend(float angle);    
 };
 
 #endif

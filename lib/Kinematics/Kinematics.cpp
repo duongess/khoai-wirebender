@@ -22,7 +22,3 @@ float Kinematics::calcBend(float rawAngle) {
     }
     return compensatedAngle;
 }
-
-float Kinematics::getMaxStroke() {
-    return MAX_FEED_STROKE_MM;
-}
