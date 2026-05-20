@@ -46,6 +46,7 @@ const float SPEED_MM_PER_SEC = 10.0f;
 
 // Toc đo toi da di chuyen
 const float MAX_SPEED = 180.0f; // (90-180]
+static const int QUEUE_SIZE = 200; 
 
 // ==========================================
 // GIOI HAN CO KHI (MECHANICAL CONSTRAINTS)
@@ -53,7 +54,7 @@ const float MAX_SPEED = 180.0f; // (90-180]
 const float MAX_FEED_STROKE_MM = 30.0f; // Hanh trinh day toi da cua 1 nhat ep (mm)
 const int BEND_HOME_ANGLE = 0;          // Goc nghi mac dinh de thep di qua khong bi ket (do)
 const int BEND_MAX_ANGLE = 180;         // Gioi han chong va dap co khi cua servo uon (do)
-const int MAX_POINTS = 50; // Gioi han diem
+const int MAX_POINTS = 200; // Gioi han diem
 
 // ==========================================
 // BU TRU SAI SO (ERROR COMPENSATION)

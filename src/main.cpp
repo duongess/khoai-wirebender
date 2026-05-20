@@ -10,6 +10,8 @@
 #include <Arduino.h>
 #include "HardwareController.h"
 HardwareController machine;
+#else
+#include <fstream>
 #endif
 
 PathPlanner planner;
@@ -27,10 +29,29 @@ void setup() {
     for (int i = 0; i < planner.getPointCount(); i++) {
         Vector currentVec = planner.getVector(i);
         
+        // Bo qua thuc thi servo neu net ve di thang (goc lech xap xi 0)
+        if (abs(currentVec.angle) > 0.1f) {
+            
+            // Tinh goc co bu tru dan hoi (VD: -45 do * 1.05 = -47.25 do)
+            float bendAngleWithError = engine.calcBend(currentVec.angle);
+            
+            // MAP GOC SERVO:
+            // -90 do (be phai) -> 0 do Servo
+            // 0 do (di thang) -> 90 do Servo (Vi tri home moi)
+            // +90 do (be trai) -> 180 do Servo
+            float servoTarget = 90.0f + bendAngleWithError;
+            
+            // Gioi han chong va dap the chat cho servo
+            if (servoTarget > 180.0f) servoTarget = 180.0f;
+            if (servoTarget < 0.0f) servoTarget = 0.0f;
+            
+            cmdQueue.push({CMD_BEND, servoTarget});
+        }
+        
+        // Day phoi
         float lengthWithError = engine.calcFeed(currentVec.length);
         float maxS = engine.getMaxStroke();
         
-        // Tinh so lan day toi da va xu ly phan du chieu dai
         int strokes = (int)(lengthWithError / maxS);
         float remainder = lengthWithError - (strokes * maxS);
         
@@ -38,41 +59,54 @@ void setup() {
             cmdQueue.push({CMD_FEED, maxS});
         }
         
-        // Neu con du chieu dai chua day het, phai day not
         if (remainder > 0.0f) {
             cmdQueue.push({CMD_FEED, remainder});
         }
-        
-        float bendAngleWithError = engine.calcBend(currentVec.angle);
-        cmdQueue.push({CMD_BEND, bendAngleWithError});
     }
     
-    printLog("Da nap lenh vao hang doi.");
+    printLn("Da nap lenh vao hang doi.");
 }
 
 void loop() {
+#ifndef ARDUINO
+    // Tao luong ghi file tinh, chi khoi tao 1 lan khi loop chay lan dau
+    // Co ios::trunc de xoa trang du lieu cu moi khi chay lai phan mem
+    static std::ofstream outFile("master/data/result.txt", std::ios::out | std::ios::trunc);
+#endif
+
     if (!cmdQueue.isEmpty()) {
         Instruction currentCmd = cmdQueue.pop();
         
         if (currentCmd.type == CMD_FEED) {
-            printLog("Day day (mm): ");
-            printLog(currentCmd.value);
+            print("FEED ");
+            printLn(currentCmd.value);
             
-#ifdef ARDUINO
+#ifndef ARDUINO
+            if (outFile.is_open()) {
+                outFile << "FEED " << currentCmd.value << "\n";
+            }
+#else
             machine.executeFeed(currentCmd.value);
 #endif
         } 
         else if (currentCmd.type == CMD_BEND) {
-            printLog("Uon day (do): ");
-            printLog(currentCmd.value);
+            print("BEND ");
+            printLn(currentCmd.value);
             
-#ifdef ARDUINO
+#ifndef ARDUINO
+            if (outFile.is_open()) {
+                outFile << "BEND " << currentCmd.value << "\n";
+            }
+#else
             machine.executeBend(currentCmd.value);
 #endif
         }
     } else {
 #ifndef ARDUINO
-        // Tren PC, khi hang doi het lenh thi dung phan mem
+        // Dong file de xa toan bo bo dem xuong o cung truoc khi thoat
+        if (outFile.is_open()) {
+            outFile.close();
+        }
         exit(0);
 #endif
     }

@@ -28,7 +28,7 @@ PathPlanner::PathPlanner() {
 
 void PathPlanner::generatePath() {
     if (!hasPathData) {
-        printLog("ERR: Thieu PathData.h");
+        printLn("ERR: Thieu PathData.h");
         return;
     }
 
@@ -39,7 +39,7 @@ void PathPlanner::generatePath() {
     int pointsToRead = PATH_POINT_COUNT;
     if (pointsToRead > MAX_POINTS) {
         pointsToRead = MAX_POINTS;
-        printLog("WARN: Du lieu bi cat xen vi vuot MAX_POINTS");
+        printLn("WARN: Du lieu bi cat xen vi vuot MAX_POINTS");
     }
 
     // Vong lap dung chung cho ca PC va Arduino thong qua macro
@@ -49,7 +49,7 @@ void PathPlanner::generatePath() {
     }
 
     calculateVectors(x, y, pointsToRead);
-    printLog("LOAD_OK: PathData");
+    printLn("LOAD_OK: PathData");
 }
 
 void PathPlanner::calculateVectors(float x[], float y[], int count) {
@@ -68,21 +68,23 @@ void PathPlanner::calculateVectors(float x[], float y[], int count) {
             float prevDx = x[i] - x[i-1];
             float prevDy = y[i] - y[i-1];
             
-            float dotProduct = (dx * prevDx) + (dy * prevDy);
-            float len1 = path[i-1].length;
-            float len2 = path[i].length;
+            // Tinh goc tuyet doi bang atan2 
+            float angle1 = atan2(prevDy, prevDx) * 180.0f / M_PI;
+            float angle2 = atan2(dy, dx) * 180.0f / M_PI;
             
-            float cosTheta = dotProduct / (len1 * len2);
+            // Tinh goc be lai kem dau (Trai/Phai)
+            float turnAngle = angle2 - angle1;
             
-            if (cosTheta > 1.0f) cosTheta = 1.0f;
-            if (cosTheta < -1.0f) cosTheta = -1.0f;
+            // Chuan hoa goc ve bien do [-180, 180]
+            while (turnAngle <= -180.0f) turnAngle += 360.0f;
+            while (turnAngle > 180.0f) turnAngle -= 360.0f;
             
-            path[i].angle = acos(cosTheta) * 180.0f / M_PI;
+            path[i].angle = turnAngle;
         } else {
-            path[i].angle = 0.0f;
+            // Doan thang dau tien: Xac dinh huong goc tren he toa do
+            path[i].angle = atan2(dy, dx) * 180.0f / M_PI;
         }
     }
-    
     pointCount = count - 1;
 }
 

@@ -87,7 +87,7 @@ class DrawingBoard:
             return
             
         try:
-            simplified_points = rdp(self.coordinates, epsilon=2.0)
+            simplified_points = rdp(self.coordinates, epsilon=3.0)
             # Luu anh preview
             self.image.save("data/image.png")
             
