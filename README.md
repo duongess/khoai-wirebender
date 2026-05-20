@@ -65,5 +65,3 @@ pio run -e uno -t upload
 ## 4. Hardware Notes
 
 **CRITICAL:** Please double-check the `include/Config.h` file to ensure you have correctly wired the PWM signal pins for both the **Feed Servo** and **Bend Servo** before providing power to the system.
-
-```
