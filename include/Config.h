@@ -1,6 +1,15 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#ifndef ARDUINO
+    #define A0 14
+    #define A1 15
+    #define A2 16
+    #define A3 17
+    #define A4 18
+    #define A5 19
+#endif
+
 enum CommandType {
     CMD_FEED, 
     CMD_BEND  
@@ -42,6 +51,7 @@ const float MAX_SPEED = 180.0f; // (90-180]
 const float MAX_FEED_STROKE_MM = 30.0f; // Hanh trinh day toi da cua 1 nhat ep (mm)
 const int BEND_HOME_ANGLE = 0;          // Goc nghi mac dinh de thep di qua khong bi ket (do)
 const int BEND_MAX_ANGLE = 180;         // Gioi han chong va dap co khi cua servo uon (do)
+const int MAX_POINTS = 50; // Gioi han diem
 
 // ==========================================
 // BU TRU SAI SO (ERROR COMPENSATION)

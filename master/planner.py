@@ -2,6 +2,7 @@ import os
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageDraw
+from rdp import rdp
 
 class DrawingBoard:
     def __init__(self, root):
@@ -86,6 +87,7 @@ class DrawingBoard:
             return
             
         try:
+            simplified_points = rdp(self.coordinates, epsilon=2.0)
             # Luu anh preview
             self.image.save("data/image.png")
             
@@ -113,7 +115,7 @@ class DrawingBoard:
                 f.write("#endif\n\n")
                 
                 # Loc bo cac diem ngat net (-1, -1)
-                valid_coords = [pt for pt in self.coordinates if pt[0] != -1]
+                valid_coords = [pt for pt in simplified_points if pt[0] != -1]
                 
                 f.write(f"const int PATH_POINT_COUNT = {len(valid_coords)};\n\n")
                 

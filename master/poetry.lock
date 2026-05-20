@@ -282,6 +282,20 @@ tomli = {version = ">=1", markers = "python_version < \"3.11\""}
 dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests", "setuptools", "xmlschema"]
 
 [[package]]
+name = "rdp"
+version = "0.8"
+description = "Pure Python implementation of the Ramer-Douglas-Peucker algorithm"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "rdp-0.8.tar.gz", hash = "sha256:19ec92f0803587891a00b439441e5e23fc9410500983f02941e4cf9ac3113e4b"},
+]
+
+[package.dependencies]
+numpy = "*"
+
+[[package]]
 name = "tomli"
 version = "2.4.1"
 description = "A lil' TOML parser"
@@ -355,4 +369,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "3b1e17df2e6e7bc39832881e481461fcaef0773caab1be77fec0696c70481e9f"
+content-hash = "daafe9bd902f6d86cfb8d59d7cd56c369d2c832a4867af5d912ff13c4c26720b"

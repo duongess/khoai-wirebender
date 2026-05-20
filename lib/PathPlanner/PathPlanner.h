@@ -6,7 +6,6 @@
 class PathPlanner {
 private:
     // Gioi han toi da so luong diem de bao ve RAM Arduino
-    static const int MAX_POINTS = 10; 
     Vector path[MAX_POINTS];
     int pointCount;
 
