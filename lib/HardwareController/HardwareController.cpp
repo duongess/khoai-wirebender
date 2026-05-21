@@ -49,6 +49,8 @@ bool HardwareController::isStartStopPressed() {
         }
     }
     lastButtonState = reading;
+#else
+    return true;
 #endif
     return false;
 }
