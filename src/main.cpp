@@ -95,6 +95,10 @@ void loop() {
 
     if (!cmdQueue.isEmpty()) {
         Instruction currentCmd = cmdQueue.pop();
+
+        if (machine.isStartStopPressed()) {
+            delay(100);
+        }
         
         if (currentCmd.type == CMD_FEED) {
             print("FEED ");
@@ -127,6 +131,8 @@ void loop() {
             outFile.close();
         }
         exit(0);
+#else:
+        machine.reset();
 #endif
     }
 }

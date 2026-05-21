@@ -18,6 +18,7 @@ public:
     HardwareController();
     
     void init();
+    void reset();
     bool isStartStopPressed();
     
     void executeFeed(float distance);

@@ -16,11 +16,15 @@ void HardwareController::init() {
     // Kich hoat dien tro keo len cho nut bam
     pinMode(PIN_BTN_START, INPUT_PULLUP);
     
-    servoFeed.write(0);
-    servoBend.write(0);
+    this->reset();
     
     Serial.println("SYS_READY");
 #endif
+}
+
+void HardwareController::reset() {
+    servoFeed.write(90);
+    servoBend.write(90);
 }
 
 bool HardwareController::isStartStopPressed() {
