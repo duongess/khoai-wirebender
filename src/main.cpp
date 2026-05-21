@@ -93,12 +93,8 @@ void loop() {
     static std::ofstream outFile("master/data/result.txt", std::ios::out | std::ios::trunc);
 #endif
 
-    if (!cmdQueue.isEmpty()) {
+    if (!cmdQueue.isEmpty() && machine.isStartStopPressed()) {
         Instruction currentCmd = cmdQueue.pop();
-
-        if (machine.isStartStopPressed()) {
-            delay(100);
-        }
         
         if (currentCmd.type == CMD_FEED) {
             print("FEED ");
